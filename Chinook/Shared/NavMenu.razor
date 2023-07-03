@@ -1,0 +1,74 @@
+﻿@using Chinook.Services;
+@using ChinookDataAccessLayer.Models;
+@using System.Security.Claims;
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Chinook</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span>Home
+            </NavLink>
+        </div>
+        @*Playlists are added dynamically*@
+        @foreach (var playList in PlayLists)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@string.Format("/playlist/{0}",playList.PlaylistId)" Match="NavLinkMatch.All">
+                    <i class="bi bi-music-note-list me-3" style="font-size: 1.25em"></i>@playList.Playlist.Name
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private List<UserPlaylistData> PlayLists;
+    @inject PlayListsService playlistService; // Injecting playlist service instead of directly accessing db context class
+    private string CurrentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+        CurrentUserId = await GetUserId();
+        PlayLists = GetPlayLists();
+    }
+
+    public List<UserPlaylistData> GetPlayLists()
+    {
+        return playlistService.GetUserPlayLists(CurrentUserId);
+    }
+
+    public UserPlaylistData GetPlayList(long playListId)
+    {
+        var userList = playlistService.GetUserPlayLists(CurrentUserId).FirstOrDefault(x => x.PlaylistId == playListId);
+        return userList != null ? userList : new UserPlaylistData();
+    }
+
+    private async Task<string> GetUserId()
+    {
+        var user = (await authenticationState).User;
+        var userId = user.FindFirst(u => u.Type.Contains(ClaimTypes.NameIdentifier))?.Value;
+        return userId;
+    }
+}
+
+
+}

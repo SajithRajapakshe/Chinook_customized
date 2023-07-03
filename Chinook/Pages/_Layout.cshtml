@@ -1,0 +1,78 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace Chinook.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="Chinook.styles.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    @RenderBody()
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    @*Added two functions to Add tracks to various lists and to search the artist by name*@
+    <script type="text/javascript">
+        function UpdatePlayList(inputs) {
+
+            $(document).ready(function () {
+                var playListName = "";
+                if (inputs.addToFavouriteTracks === false)
+                    playListName = document.getElementById('NewPlaylist').value;
+
+                var selectedPlayListId = inputs.playListId;
+                if ($('#ExistingPlaylist').length > 0 && inputs.addToFavouriteTracks === false)
+                    selectedPlayListId = $('#ExistingPlaylist').val();
+                $.ajax({
+                    url: "/PlayLists/AddPlayList",
+                    datatype: "text",
+                    data: { playListName: playListName, userId: inputs.userId, playListId: selectedPlayListId, trackId: inputs.trackId, addToFavouriteTracks: inputs.addToFavouriteTracks, isFavourite: inputs.isFavourite },
+                    success: function (data) {
+                        window.location.reload(); // To be changed. Bind the result partial view to the appropriate section
+                    },
+                    error: function () {
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+
+        function SearchArtist(searchText) {
+
+            $(document).ready(function () {
+                var searchText = $('#artistSerachBar').val();
+                $.ajax({
+                    url: "/Artist/SearchArtist",
+                    datatype: "text",
+                    data: { artistName: searchText },
+                    success: function (data) {
+                        $('#artistTable').html(data); // Binding search result to the appropriate html table
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

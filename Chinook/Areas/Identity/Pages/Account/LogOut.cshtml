@@ -1,0 +1,17 @@
+﻿@page
+@using Chinook.Models
+@using ChinookDataAccessLayer.Models;
+@using Microsoft.AspNetCore.Identity
+@attribute [IgnoreAntiforgeryToken]
+@inject SignInManager<ChinookUserData> SignInManager
+@functions {
+    public async Task<IActionResult> OnPost()
+    {
+        if (SignInManager.IsSignedIn(User))
+        {
+            await SignInManager.SignOutAsync();
+        }
+
+        return Redirect("~/");
+    }
+}
