@@ -33,7 +33,7 @@ namespace Chinook.Services
             try
             {
                 var users = _dbContext.Users.Include(a => a.UserPlaylists).ToList();
-                var artists = searchTerm.IsNullOrEmpty() ? _dbContext.Artists.ToList() : _dbContext.Artists.Where(x => x.Name.Contains(searchTerm)).ToList();
+                var artists = searchTerm.IsNullOrEmpty() ? _dbContext.Artists.Include(x => x.Albums).ToList() : _dbContext.Artists.Where(x => x.Name.ToLower().Contains(searchTerm.ToLower())).Include(x => x.Albums).ToList();
 
                 return artists;
             }

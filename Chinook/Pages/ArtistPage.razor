@@ -78,7 +78,9 @@ else
     private DbContext DbContext;
     private PlaylistTrack SelectedTrack;
     private string InfoMessage;
+    private string ErrorMessage = "";
     private string CurrentUserId;
+    private string AddedPlayListName = "";
 
     @inject IJSRuntime JS;//Injecting JS runtime object
 
@@ -125,29 +127,57 @@ else
     {
         CloseInfoMessage();
         SelectedTrack = Tracks.FirstOrDefault(t => t.TrackId == trackId);
-        SelectedPlayList = UserPlayLists.FirstOrDefault(x => x.PlaylistId != Constants.MyFravouriteListId);
         PlaylistDialog.Open();
     }
 
-
-    private void OnPlayListSelected(long playListId)
+    /// <summary>
+    /// called when an existing playlist is selected.
+    /// </summary>
+    /// <param name="e"></param>
+    private void OnPlayListSelected(ChangeEventArgs e)
     {
-        if (playListId == 0)
+        if (long.Parse(e.Value.ToString()) == 0)
             SelectedPlayList = new UserPlaylistData();
 
-        SelectedPlayList = UserPlayLists.FirstOrDefault(t => t.PlaylistId == playListId);
+        SelectedPlayList = UserPlayLists.FirstOrDefault(t => t.PlaylistId == long.Parse(e.Value.ToString()));
+        AddedPlayListName = "";
+    }
+
+    /// <summary>
+    /// Called when a new play list is added 
+    /// </summary>
+    /// <param name="e"></param>
+    private void OnNewPlaylistNameAdded(ChangeEventArgs e)
+    {
+        AddedPlayListName = e.Value.ToString();
+        SelectedPlayList = UserPlayLists.FirstOrDefault(t => t.PlaylistId == Constants.DefaultPlayListId);
     }
 
     private void CloseInfoMessage()
     {
         InfoMessage = "";
     }
+
+    private void CloseErrorMessage()
+    {
+        ErrorMessage = "";
+    }
+
     /// <summary>
     /// Common method to add tracks to favourite list, remove from favourite list, adding tracks to different lists
     /// </summary>
     private async void AddTracks()
     {
-        await JS.InvokeAsync<string>("UpdatePlayList", new { userId = CurrentUserId, playListId = SelectedPlayList.PlaylistId, trackId = SelectedTrack.TrackId, addToFavouriteTracks = false, isFavourite = false });
+        if (AddedPlayListName == "" && (SelectedPlayList == null || SelectedPlayList.PlaylistId == 0))
+        {
+            ErrorMessage = "Please select a valid Existing playlist or a valid name to create a playlist";
+
+        }
+        else
+        {
+            var selectedPlayListId = SelectedPlayList != null ? SelectedPlayList.PlaylistId : Constants.DefaultPlayListId;
+            await JS.InvokeAsync<object>("UpdatePlayList", new { userId = CurrentUserId, playListId = selectedPlayListId, playListName = AddedPlayListName, trackId = SelectedTrack.TrackId, addToFavouriteTracks = false, isFavourite = false });
+        }
     }
 }
 
@@ -168,24 +198,38 @@ else
 
         <div class="form-group mb-2">
             <label for="ExistingPlaylist">Add to existing playlist</label>
-            <select class="form-control" id="ExistingPlaylist">
-                @foreach (var userPlayList in UserPlayLists.Where(x => x.PlaylistId != Constants.MyFravouriteListId))
+            <select class="form-control" id="ExistingPlaylist" @onchange="OnPlayListSelected">
+                @foreach (var userPlayList in UserPlayLists)
                 {
-                    <option id="@userPlayList.PlaylistId" value="@userPlayList.PlaylistId" onselect="@(()=>OnPlayListSelected(userPlayList.PlaylistId))">@userPlayList.Playlist.Name</option>
+                    var selected = userPlayList.PlaylistId == Constants.DefaultPlayListId;
+                    <option id="@userPlayList.PlaylistId" value="@userPlayList.PlaylistId" selected="@selected">@userPlayList.Playlist.Name</option>
                 }
             </select>
         </div>
         <div class="form-group mb-2">
             <label for="NewPlaylist">Create new playlist</label>
-            <input type="text" id="NewPlaylist" class="form-control" placeholder="Name for the new playlist">
+            <input type="text" id="NewPlaylist" class="form-control" placeholder="Name for the new playlist" @onchange="OnNewPlaylistNameAdded">
         </div>
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="alert alert-info fade show">
+                <div class="d-flex align-items-start">
+                    <div class="flex-grow-1">
+                        <span>@ErrorMessage</span>
+                    </div>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CloseErrorMessage"></button>
+                </div>
+            </div>
+        }
 
     </Body>
+
     <Footer>
-        <button class="btn btn-success" @onclick="AddTracks">Save</button>
+        @{
+            <button class="btn btn-success" @onclick="AddTracks">Save</button>
+        }
+
     </Footer>
-
-
 </Modal>
 
 

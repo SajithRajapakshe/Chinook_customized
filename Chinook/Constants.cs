@@ -8,5 +8,9 @@
         public static long MyFravouriteListId = 100;
 
         public static string MyFravouriteListName = "My favorite tracks";
+
+        public static int DefaultPlayListId = 0;
+
+        public static string DefaultPlayListName = "Select a playlist";
     }
 }

@@ -18,12 +18,12 @@
             </NavLink>
         </div>
         @*Playlists are added dynamically*@
-        @foreach (var playList in PlayLists)
+        @foreach (var playList in PlayLists.Where(x => x.PlaylistId != Constants.DefaultPlayListId).ToList())
         {
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@string.Format("/playlist/{0}",playList.PlaylistId)" Match="NavLinkMatch.All">
+                <a class="nav-link" href="@string.Format("playlist/{0}",playList.PlaylistId)" Match="NavLinkMatch.Prefix">
                     <i class="bi bi-music-note-list me-3" style="font-size: 1.25em"></i>@playList.Playlist.Name
-                </NavLink>
+                </a>
             </div>
         }
     </nav>

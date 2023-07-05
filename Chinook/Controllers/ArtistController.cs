@@ -20,7 +20,7 @@ namespace Chinook.Controllers
         }
 
         /// <summary>
-        /// Search articst by artistName
+        /// Search artist by artistName
         /// </summary>
         /// <param name="artistName"></param>
         /// <returns></returns>
@@ -31,6 +31,12 @@ namespace Chinook.Controllers
             return PartialView("_ArtistTable", model);
         }
 
+
+        /// <summary>
+        /// Create view model for the search results
+        /// </summary>
+        /// <param name="artists"></param>
+        /// <returns></returns>
         private ArtistSearchList CreateSearchResultModel(List<ArtistData> artists)
         {
             var model = new ArtistSearchList();

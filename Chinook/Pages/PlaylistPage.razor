@@ -7,7 +7,7 @@
 @using Microsoft.EntityFrameworkCore
 @using System.Security.Claims;
 
-<h1>Playlist <strong>@Playlist.Name</strong></h1>
+<h1>Playlist <strong>@Playlist?.Name</strong></h1>
 
 @if (!string.IsNullOrWhiteSpace(InfoMessage))
 {
@@ -79,6 +79,14 @@ else
         await InvokeAsync(StateHasChanged);
         Playlist = playListService.GetUserPlayList(CurrentUserId, PlaylistId);
    
+    }
+    /// <summary>
+    /// Added to call the initializing method when changing the URL parameter - in the same page
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnParametersSetAsync()
+    {
+        await OnInitializedAsync();
     }
 
     private async Task<string> GetUserId()

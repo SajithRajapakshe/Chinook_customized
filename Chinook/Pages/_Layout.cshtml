@@ -28,24 +28,17 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="_framework/blazor.server.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     @*Added two functions to Add tracks to various lists and to search the artist by name*@
+    <script src="_framework/blazor.server.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
     <script type="text/javascript">
         function UpdatePlayList(inputs) {
-
             $(document).ready(function () {
-                var playListName = "";
-                if (inputs.addToFavouriteTracks === false)
-                    playListName = document.getElementById('NewPlaylist').value;
-
-                var selectedPlayListId = inputs.playListId;
-                if ($('#ExistingPlaylist').length > 0 && inputs.addToFavouriteTracks === false)
-                    selectedPlayListId = $('#ExistingPlaylist').val();
                 $.ajax({
                     url: "/PlayLists/AddPlayList",
                     datatype: "text",
-                    data: { playListName: playListName, userId: inputs.userId, playListId: selectedPlayListId, trackId: inputs.trackId, addToFavouriteTracks: inputs.addToFavouriteTracks, isFavourite: inputs.isFavourite },
+                    data: { playListName: inputs.playListName, userId: inputs.userId, playListId: inputs.playListId, trackId: inputs.trackId, addToFavouriteTracks: inputs.addToFavouriteTracks, isFavourite: inputs.isFavourite },
                     success: function (data) {
                         window.location.reload(); // To be changed. Bind the result partial view to the appropriate section
                     },
@@ -55,9 +48,7 @@
                 });
             });
         }
-
         function SearchArtist(searchText) {
-
             $(document).ready(function () {
                 var searchText = $('#artistSerachBar').val();
                 $.ajax({

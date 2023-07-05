@@ -35,9 +35,22 @@ namespace Chinook.Services
             var list = _dbContext.UserPlaylists.Where(x => x.UserId == userId)
                 .Include(x => x.Playlist)
                 .ThenInclude(x => x.Tracks)
+                .OrderBy(x => x.PlaylistId)
                 .ToList();
 
-            return list;
+            list.Add(AddDefaultPlayList());
+
+            return list.OrderBy(x => x.PlaylistId).ToList();
+        }
+
+        private UserPlaylistData AddDefaultPlayList()
+        {
+            var defaultPlayList = new UserPlaylistData();
+            defaultPlayList.Playlist = new PlaylistData();
+            defaultPlayList.PlaylistId = Constants.DefaultPlayListId;
+            defaultPlayList.Playlist.Name = Constants.DefaultPlayListName;
+
+            return defaultPlayList;
         }
 
         public Playlist GetUserPlayList(string currentUserId, long playListId)
@@ -78,19 +91,27 @@ namespace Chinook.Services
             {
                 var existingUserPlayList = _dbContext.UserPlaylists.Local.SingleOrDefault(o => o.UserId == userId && o.Playlist.PlaylistId == playListId);
                 if (existingUserPlayList != null)
+                {
                     _dbContext.Entry(existingUserPlayList).State = EntityState.Detached;
 
-                var playList = _dbContext.Playlists.Local.SingleOrDefault(c => c.PlaylistId == playListId);
-                if (playList != null)
-                {
-                    playList.Tracks = model.Playlist.Tracks;
-                    model.Playlist = playList;
+                    var playList = _dbContext.Playlists.Local.SingleOrDefault(c => c.PlaylistId == playListId);
+                    if (playList != null)
+                    {
+                        playList.Tracks = model.Playlist.Tracks;
+                        model.Playlist = playList;
+                    }
+                    else
+                        _dbContext.Attach(model.Playlist);
+
+                    _dbContext.Update(model);
+                    _dbContext.SaveChanges();
                 }
                 else
-                    _dbContext.Attach(model.Playlist);
-
-                _dbContext.Update(model);
-                _dbContext.SaveChanges();
+                {
+                    _dbContext.Save.Add(model);
+                    _dbContext.SaveChanges();
+                }
+                   
             }
             catch (Exception ex)
             {
