@@ -25,7 +25,7 @@ namespace Chinook.Services
         }
 
         /// <summary>
-        /// Get All artists
+        /// Get All artists and Search Artist by search term
         /// </summary>
         /// <returns></returns>
         public async Task<List<ArtistData>> GetArtists(string searchTerm = "")
